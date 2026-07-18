@@ -21,7 +21,7 @@ const AppCard = ({ place, deletePlace }: Props) => {
       <View style={styles.container}>
 
         <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=1200' }}
+          source={{ uri: place.imageUri ?? 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=1200' }}
           style={styles.image}
         />
 
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: 110,
+    width: 130,
     height: '100%',
     borderTopLeftRadius: 12,
     borderBottomLeftRadius: 12,

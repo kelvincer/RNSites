@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, ScrollView, Image } from 'react-native';
+import { StyleSheet, ScrollView, Image, FlatList } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigator/navigator';
 import { Card, Chip, Divider, List, Text } from 'react-native-paper';
 import { Place } from '../../domain/entities/Place';
 import { getPlace } from '../../actions/storage';
+import { findNearbyPlaces } from '../../actions/get-nearby-place';
+import { GeoNamePlace } from '../../infrastructure/nearby.response';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Details'>;
 
@@ -13,6 +15,7 @@ export default function DetailsScreen({ route, navigation }: Props) {
   const idRef = useRef(route.params.id);
 
   const [place, setPlace] = useState<Place | null>(null);
+  const [nearbyPlaces, setNearbyPlaces] = useState<GeoNamePlace[]>([]);
 
   useEffect(() => {
     loadPlace();
@@ -21,6 +24,8 @@ export default function DetailsScreen({ route, navigation }: Props) {
   const loadPlace = async () => {
     const data = await getPlace(idRef.current);
     setPlace(data);
+    const places = await findNearbyPlaces(data?.latitude || 0, data?.longitude || 0);
+    setNearbyPlaces(places);
   };
 
   const place2 = {
@@ -37,7 +42,7 @@ export default function DetailsScreen({ route, navigation }: Props) {
   return (
     <ScrollView style={styles.container}>
       <Image
-        source={{ uri: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=1200' }}
+        source={{ uri: place?.imageUri ?? 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=1200' }}
         style={styles.image}
         resizeMode="cover"
       />
@@ -84,6 +89,20 @@ export default function DetailsScreen({ route, navigation }: Props) {
             description={place?.longitude.toString()}
             left={(props) => (
               <List.Icon {...props} icon="earth" />
+            )}
+          />
+
+          <Text variant="titleMedium" style={styles.sectionTitle}>
+            Lugares cercanos:
+          </Text>
+
+          <FlatList
+            data={nearbyPlaces}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.geonameId.toString()}
+            renderItem={({ item }) => (
+              <Text>{item.name}</Text>
             )}
           />
 

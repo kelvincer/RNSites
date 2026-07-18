@@ -6,6 +6,7 @@ import {
     Platform,
     PermissionsAndroid,
     Pressable,
+    Image,
 } from 'react-native';
 import {
     Button,
@@ -81,8 +82,6 @@ export default function PlaceForm({ navigation }: Props) {
                     imageUri: values.imageUri,
                 };
 
-                console.log(place);
-
                 await savePlace(place);
                 navigation.goBack();
             }}
@@ -92,219 +91,241 @@ export default function PlaceForm({ navigation }: Props) {
                 handleChange,
                 setFieldValue,
                 handleSubmit,
-            }) => (
-                <ScrollView
-                    contentContainerStyle={styles.container}
-                    keyboardShouldPersistTaps="handled"
-                >
+            }) => {
 
-                    <TextInput
-                        mode="outlined"
-                        label="Nombre del lugar"
-                        value={values.name}
-                        onChangeText={handleChange('name')}
-                        style={styles.input}
-                    />
+                const selectImage = async () => {
+                    launchImageLibrary(
+                        {
+                            mediaType: 'photo',
+                            selectionLimit: 1, // Solo una imagen
+                            quality: 1,
+                        },
+                        response => {
+                            if (response.didCancel) {
+                                console.log('Usuario canceló');
+                            } else if (response.errorCode) {
+                                console.log(response.errorMessage);
+                            } else if (response.assets && response.assets.length > 0) {
+                                const image = response.assets[0];
 
-                    <TextInput
-                        mode="outlined"
-                        label="Descripción"
-                        multiline
-                        numberOfLines={4}
-                        value={values.description}
-                        onChangeText={handleChange('description')}
-                        style={styles.multiline}
-                    />
+                                console.log(image.uri);
+                                console.log(image.fileName);
+                                console.log(image.type);
+                                console.log(image.fileSize);
 
-                    <Menu
-                        visible={menuVisible}
-                        onDismiss={() => setMenuVisible(false)}
-                        anchor={
-                            <Pressable onPress={() => setMenuVisible(true)}>
-                                <TextInput
-                                    mode="outlined"
-                                    label="Categoría"
-                                    value={values.category}
-                                    editable={false}
-                                    right={
-                                        <TextInput.Icon
-                                            icon="menu-down"
-                                            onPress={() => setMenuVisible(true)}
-                                        />
-                                    }
-                                    onPressIn={() => setMenuVisible(true)}
+                                setFieldValue('imageUri', image.uri || null);
+
+                                //setImage(image);
+                            }
+                        },
+                    );
+                }
+
+                return (
+                    <ScrollView
+                        contentContainerStyle={styles.container}
+                        keyboardShouldPersistTaps="handled">
+
+                        <TextInput
+                            mode="outlined"
+                            label="Nombre del lugar"
+                            value={values.name}
+                            onChangeText={handleChange('name')}
+                            style={styles.input}
+                        />
+
+                        <TextInput
+                            mode="outlined"
+                            label="Descripción"
+                            multiline
+                            numberOfLines={4}
+                            value={values.description}
+                            onChangeText={handleChange('description')}
+                            style={styles.multiline}
+                        />
+
+                        <Menu
+                            visible={menuVisible}
+                            onDismiss={() => setMenuVisible(false)}
+                            anchor={
+                                <Pressable onPress={() => setMenuVisible(true)}>
+                                    <TextInput
+                                        mode="outlined"
+                                        label="Categoría"
+                                        value={values.category}
+                                        editable={false}
+                                        right={
+                                            <TextInput.Icon
+                                                icon="menu-down"
+                                                onPress={() => setMenuVisible(true)}
+                                            />
+                                        }
+                                        onPressIn={() => setMenuVisible(true)}
+                                    />
+                                </Pressable>
+                            }
+                        >
+                            {categories.map((item) => (
+                                <Menu.Item
+                                    key={item}
+                                    title={item}
+                                    onPress={() => {
+                                        setFieldValue('category', item);
+                                        setMenuVisible(false);
+                                    }}
                                 />
-                            </Pressable>
-                        }
-                    >
-                        {categories.map((item) => (
-                            <Menu.Item
-                                key={item}
-                                title={item}
-                                onPress={() => {
-                                    setFieldValue('category', item);
-                                    setMenuVisible(false);
+                            ))}
+                        </Menu>
+
+                        <View style={{ height: 16 }} />
+
+                        <TextInput
+                            mode="outlined"
+                            label="Fecha"
+                            value={values.date.toLocaleDateString()}
+                            editable={false}
+                            style={styles.input}
+                            right={
+                                <TextInput.Icon
+                                    icon="calendar"
+                                    onPress={() => setShowDatePicker(true)}
+                                />
+                            }
+                            onPressIn={() => setShowDatePicker(true)}
+                        />
+
+                        {showDatePicker && (
+                            <DateTimePicker
+                                value={values.date}
+                                mode="date"
+                                style={styles.input}
+                                display={
+                                    Platform.OS === 'ios'
+                                        ? 'spinner'
+                                        : 'default'
+                                }
+                                onChange={(event, date) => {
+                                    setShowDatePicker(false);
+
+                                    if (date) {
+                                        setFieldValue('date', date);
+                                    }
                                 }}
                             />
-                        ))}
-                    </Menu>
+                        )}
 
-                    <View style={{ height: 16 }} />
-                    
-                    <TextInput
-                        mode="outlined"
-                        label="Fecha"
-                        value={values.date.toLocaleDateString()}
-                        editable={false}
-                        style={styles.input}
-                        right={
-                            <TextInput.Icon
-                                icon="calendar"
-                                onPress={() => setShowDatePicker(true)}
-                            />
-                        }
-                        onPressIn={() => setShowDatePicker(true)}
-                    />
-
-                    {showDatePicker && (
-                        <DateTimePicker
-                            value={values.date}
-                            mode="date"
+                        <TextInput
+                            mode="outlined"
+                            label="Latitud"
+                            keyboardType="decimal-pad"
+                            value={values.latitude}
+                            onChangeText={handleChange('latitude')}
                             style={styles.input}
-                            display={
-                                Platform.OS === 'ios'
-                                    ? 'spinner'
-                                    : 'default'
-                            }
-                            onChange={(event, date) => {
-                                setShowDatePicker(false);
-
-                                if (date) {
-                                    setFieldValue('date', date);
-                                }
-                            }}
                         />
-                    )}
 
-                    <TextInput
-                        mode="outlined"
-                        label="Latitud"
-                        keyboardType="decimal-pad"
-                        value={values.latitude}
-                        onChangeText={handleChange('latitude')}
-                        style={styles.input}
-                    />
-
-                    <TextInput
-                        mode="outlined"
-                        label="Longitud"
-                        keyboardType="decimal-pad"
-                        value={values.longitude}
-                        onChangeText={handleChange('longitude')}
-                        style={styles.input}
-                    />
-
-                    {/* Estado */}
-                    <View style={styles.switchContainer}>
-                        <Text variant="bodyLarge">
-                            {values.visited
-                                ? 'Visitado'
-                                : 'Pendiente'}
-                        </Text>
-
-                        <Switch
-                            value={values.visited}
-                            onValueChange={(value) => {
-                                setFieldValue('visited', value);
-                            }}
+                        <TextInput
+                            mode="outlined"
+                            label="Longitud"
+                            keyboardType="decimal-pad"
+                            value={values.longitude}
+                            onChangeText={handleChange('longitude')}
+                            style={styles.input}
                         />
-                    </View>
 
-                    {/* Botones */}
-                    <View style={styles.actions}>
+                        {/* Estado */}
+                        <View style={styles.switchContainer}>
+                            <Text variant="bodyLarge">
+                                {values.visited
+                                    ? 'Visitado'
+                                    : 'Pendiente'}
+                            </Text>
 
-                        <IconButton
-                            icon="image"
-                            mode="contained"
-                            size={30}
-                            onPress={() => {
-                                console.log('Seleccionar imagen');
-                                launchImageLibrary(
-                                    {
-                                        mediaType: 'photo',
-                                        selectionLimit: 1, // Solo una imagen
-                                        quality: 1,
-                                    },
-                                    response => {
-                                        if (response.didCancel) {
-                                            console.log('Usuario canceló');
-                                        } else if (response.errorCode) {
-                                            console.log(response.errorMessage);
-                                        } else if (response.assets && response.assets.length > 0) {
-                                            const image = response.assets[0];
+                            <Switch
+                                value={values.visited}
+                                onValueChange={(value) => {
+                                    setFieldValue('visited', value);
+                                }}
+                            />
+                        </View>
 
-                                            console.log(image.uri);
-                                            console.log(image.fileName);
-                                            console.log(image.type);
-                                            console.log(image.fileSize);
+                        <View style={styles.actions}>
 
-                                            setFieldValue('imageUri', image.uri || null);
+                            <IconButton
+                                icon="image"
+                                mode="contained"
+                                size={30}
+                                onPress={() => {
+                                    console.log('Seleccionar imagen');
+                                    selectImage();
+                                }}
+                            />
 
-                                            //setImage(image);
+                            <IconButton
+                                icon="crosshairs-gps"
+                                mode="contained"
+                                size={30}
+                                onPress={async () => {
+                                    console.log('Obtener ubicación');
+
+                                    if (Platform.OS === 'android') {
+                                        const granted = await PermissionsAndroid.request(
+                                            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                                        );
+
+                                        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+                                            return;
                                         }
-                                    },
-                                );
-                            }}
-                        />
-
-                        <IconButton
-                            icon="crosshairs-gps"
-                            mode="contained"
-                            size={30}
-                            onPress={async () => {
-                                console.log('Obtener ubicación');
-
-                                if (Platform.OS === 'android') {
-                                    const granted = await PermissionsAndroid.request(
-                                        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-                                    );
-
-                                    if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-                                        return;
                                     }
-                                }
 
-                                Geolocation.getCurrentPosition(
-                                    position => {
-                                        console.log('Latitud:', position.coords.latitude);
-                                        console.log('Longitud:', position.coords.longitude);
-                                        setFieldValue('latitude', position.coords.latitude.toString());
-                                        setFieldValue('longitude', position.coords.longitude.toString());
-                                    },
-                                    error => {
-                                        console.log(error);
-                                    },
-                                    {
-                                        enableHighAccuracy: true,
-                                        timeout: 15000,
-                                        maximumAge: 10000,
-                                    },
-                                );
-                            }}
-                        />
+                                    Geolocation.getCurrentPosition(
+                                        position => {
+                                            console.log('Latitud:', position.coords.latitude);
+                                            console.log('Longitud:', position.coords.longitude);
+                                            setFieldValue('latitude', position.coords.latitude.toString());
+                                            setFieldValue('longitude', position.coords.longitude.toString());
+                                        },
+                                        error => {
+                                            console.log(error);
+                                        },
+                                        {
+                                            enableHighAccuracy: true,
+                                            timeout: 15000,
+                                            maximumAge: 10000,
+                                        },
+                                    );
+                                }}
+                            />
 
-                    </View>
+                        </View>
 
-                    <Button
-                        mode="contained"
-                        onPress={() => handleSubmit()}
-                        style={styles.button}
-                    >
-                        Guardar Información
-                    </Button>
+                        <Pressable onPress={selectImage}>
+                            <View style={styles.imageContainer}>
+                                {values.imageUri ? (
+                                    <Image
+                                        source={{ uri: values.imageUri }}
+                                        style={styles.image}
+                                        resizeMode="cover"
+                                    />
+                                ) : (
+                                    <View style={styles.imagePlaceholder}>
+                                        <Text variant="bodyMedium">
+                                            No se ha seleccionado una imagen
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
+                        </Pressable>
 
-                </ScrollView>
-            )}
+                        <Button
+                            mode="contained"
+                            onPress={() => handleSubmit()}
+                            style={styles.button}>
+                            Guardar Información
+                        </Button>
+
+                    </ScrollView>
+                )
+            }}
         </Formik>
     );
 }
@@ -347,5 +368,26 @@ const styles = StyleSheet.create({
     button: {
         marginTop: 10,
         paddingVertical: 6,
+    },
+    imageContainer: {
+        marginTop: 20,
+        marginBottom: 20,
+        alignItems: 'center',
+    },
+
+    image: {
+        width: '100%',
+        height: 220,
+        borderRadius: 12,
+    },
+
+    imagePlaceholder: {
+        width: '100%',
+        height: 220,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
