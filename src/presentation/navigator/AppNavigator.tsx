@@ -7,6 +7,7 @@ import DetailsScreen from '../screens/DetailsScreen';
 
 import { RootStackParamList } from './navigator';
 import NewSiteScreen from '../screens/NewSiteScreen';
+import New from '../screens/New';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -34,7 +35,7 @@ export const AppNavigator = () => {
         />
          <Stack.Screen
           name="New"
-          component={NewSiteScreen}
+          component={New}
           options={{ title: 'Nuevo Sitio' }}
         />
       </Stack.Navigator>

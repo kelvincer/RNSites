@@ -1,28 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Button, FlatList } from 'react-native';
+import { View, StyleSheet, Button, FlatList, Pressable } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigator/navigator';
 import { Button as B, Card, FAB, Text } from 'react-native-paper';
 import AppCard from '../components/AppCard';
 import { Place } from '../../domain/entities/Place';
-import { STORAGE_KEY } from './NewSiteScreen';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+import { getPlaces, deletePlace } from '../../actions/storage';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
-
-
-export async function getPlaces(): Promise<Place[]> {
-    try {
-        const json = await AsyncStorage.getItem(STORAGE_KEY);
-
-        return json ? JSON.parse(json).reverse() : [];
-    } catch (error) {
-        console.log(error);
-        return [];
-    }
-}
 
 export default function HomeScreen({ navigation }: Props) {
 
@@ -47,10 +34,12 @@ export default function HomeScreen({ navigation }: Props) {
         <View style={styles.container}>
 
             <FlatList
-                data={places}
+                data={places.reverse()}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <AppCard place={item} />
+                    <Pressable onPress={() => navigation.navigate('Details', { id: item.id })}>
+                        <AppCard place={item} deletePlace={() => deletePlace(item.id, setPlaces)} />
+                    </Pressable>
                 )}
             />
 

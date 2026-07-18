@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, PermissionsAndroid, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { launchImageLibrary, Asset } from 'react-native-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -10,6 +10,10 @@ import {
   TextInput,
 } from 'react-native-paper';
 import { Place } from '../../domain/entities/Place';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigator/navigator';
+import { savePlace } from '../../actions/storage';
+import Geolocation from 'react-native-geolocation-service';
 
 const categories = [
   'Restaurante',
@@ -20,26 +24,9 @@ const categories = [
   'Otro',
 ];
 
-export const STORAGE_KEY = '@places';
+type Props = NativeStackScreenProps<RootStackParamList, 'New'>;
 
-export async function savePlace(place: Place) {
-  try {
-    const json = await AsyncStorage.getItem(STORAGE_KEY);
-
-    const places: Place[] = json ? JSON.parse(json) : [];
-
-    places.push(place);
-
-    await AsyncStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(places),
-    );
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-export default function NewSiteScreen() {
+export default function NewSiteScreen({ navigation }: Props) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -69,7 +56,8 @@ export default function NewSiteScreen() {
 
     console.log(place);
 
-    savePlace(place);
+    await savePlace(place);
+    navigation.goBack();
   };
 
   const selectImage = () => {
@@ -100,6 +88,32 @@ export default function NewSiteScreen() {
     );
   };
 
+  const getLocation = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      );
+
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        return;
+      }
+    }
+
+    Geolocation.getCurrentPosition(
+      position => {
+        console.log('Latitud:', position.coords.latitude);
+        console.log('Longitud:', position.coords.longitude);
+      },
+      error => {
+        console.log(error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 10000,
+      },
+    );
+  };
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
@@ -118,7 +132,7 @@ export default function NewSiteScreen() {
         mode="outlined"
         multiline
         numberOfLines={4}
-        style={styles.input}
+        style={styles.multilineInput}
       />
 
       <Menu
@@ -209,6 +223,9 @@ export default function NewSiteScreen() {
         style={styles.button}>
         Guardar
       </Button>
+
+      <Button onPress={getLocation}>  Obtener ubicación</Button>
+
     </ScrollView>
   );
 }
@@ -218,6 +235,11 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   input: {
+    marginBottom: 16,
+  },
+  multilineInput: {
+    height: 100,
+    textAlignVertical: 'top',
     marginBottom: 16,
   },
   switchContainer: {
