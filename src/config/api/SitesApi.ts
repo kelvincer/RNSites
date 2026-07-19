@@ -2,7 +2,7 @@ import axios from 'axios';
 
 
 const GEONAMES_USERNAME = 'kelcervan';
-const BASE_URL = 'http://api.geonames.org';
+const BASE_URL = 'https://secure.geonames.org';
 
 
 /* const fetchLocation = async (latitude: string, longitude: string) => {

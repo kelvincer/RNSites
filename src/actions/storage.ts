@@ -69,3 +69,20 @@ export async function savePlace(place: Place) {
         console.log(error);
     }
 }
+
+export const updatePlace = async (updatedPlace: Place) => {
+    const json = await AsyncStorage.getItem(STORAGE_KEY);
+
+    if (!json) return;
+
+    const places: Place[] = JSON.parse(json);
+
+    const updatedPlaces = places.map(place =>
+        place.id === updatedPlace.id ? updatedPlace : place
+    );
+
+    await AsyncStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(updatedPlaces)
+    );
+};

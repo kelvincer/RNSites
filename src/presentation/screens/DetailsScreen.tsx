@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, ScrollView, Image, FlatList } from 'react-native';
+import { StyleSheet, ScrollView, Image, FlatList, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigator/navigator';
-import { Card, Chip, Divider, List, Text } from 'react-native-paper';
+import { ActivityIndicator, Card, Chip, Divider, List, Text } from 'react-native-paper';
 import { Place } from '../../domain/entities/Place';
 import { getPlace } from '../../actions/storage';
 import { findNearbyPlaces } from '../../actions/get-nearby-place';
@@ -15,7 +15,7 @@ export default function DetailsScreen({ route, navigation }: Props) {
   const idRef = useRef(route.params.id);
 
   const [place, setPlace] = useState<Place | null>(null);
-  const [nearbyPlaces, setNearbyPlaces] = useState<GeoNamePlace[]>([]);
+  const [nearbyPlaces, setNearbyPlaces] = useState<GeoNamePlace[] | undefined>(undefined);
 
   useEffect(() => {
     loadPlace();
@@ -28,16 +28,9 @@ export default function DetailsScreen({ route, navigation }: Props) {
     setNearbyPlaces(places);
   };
 
-  const place2 = {
-    name: 'Machu Picchu',
-    description:
-      'Machu Picchu es una antigua ciudad inca ubicada en los Andes peruanos.',
-    category: 'Turismo',
-    latitude: -13.1631,
-    longitude: -72.545,
-    image:
-      'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=1200',
-  };
+  if (!nearbyPlaces) {
+    return <ActivityIndicator size="large" style={styles.loader} animating={true} />
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -56,8 +49,7 @@ export default function DetailsScreen({ route, navigation }: Props) {
 
           <Chip
             icon="map-marker"
-            style={styles.chip}
-          >
+            style={styles.chip}>
             {place?.category}
           </Chip>
 
@@ -65,8 +57,7 @@ export default function DetailsScreen({ route, navigation }: Props) {
 
           <Text
             variant="titleMedium"
-            style={styles.sectionTitle}
-          >
+            style={styles.sectionTitle}>
             Descripción
           </Text>
 
@@ -78,9 +69,9 @@ export default function DetailsScreen({ route, navigation }: Props) {
 
           <List.Item
             title="Latitud"
-            description={place?.latitude.toString()}
             left={(props) => (
-              <List.Icon {...props} icon="crosshairs-gps" />
+              <List.Icon {...props} icon="crosshairs-gps"
+                style={{ margin: 0, marginLeft: 0, marginRight: 0 }} />
             )}
           />
 
@@ -88,9 +79,12 @@ export default function DetailsScreen({ route, navigation }: Props) {
             title="Longitud"
             description={place?.longitude.toString()}
             left={(props) => (
-              <List.Icon {...props} icon="earth" />
+              <List.Icon {...props} icon="earth"
+                style={{ margin: 0, marginLeft: 0, marginRight: 0 }} />
             )}
           />
+
+          <Divider style={styles.divider} />
 
           <Text variant="titleMedium" style={styles.sectionTitle}>
             Lugares cercanos:
@@ -142,5 +136,10 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 8,
     fontWeight: 'bold',
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

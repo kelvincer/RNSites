@@ -7,9 +7,10 @@ import { Image, StyleSheet, View } from 'react-native';
 interface Props {
   place: Place;
   deletePlace: (id: string) => void;
+  editPlace: (place: Place) => void;
 }
 
-const AppCard = ({ place, deletePlace }: Props) => {
+const AppCard = ({ place, deletePlace, editPlace }: Props) => {
 
 
   return (
@@ -28,36 +29,39 @@ const AppCard = ({ place, deletePlace }: Props) => {
         <View style={styles.content}>
 
           <View style={styles.header}>
-
             <Text
               variant="titleMedium"
-              numberOfLines={1}
-              style={styles.title}
-            >
+              numberOfLines={2}
+              style={styles.title}>
               {place.name}
             </Text>
 
-            <IconButton
-              icon="delete-outline"
-              size={22}
-              onPress={() => deletePlace(place.id)}
-            />
+            <View style={styles.actions}>
+              <IconButton
+                icon="pencil-outline"
+                size={22}
+                onPress={() => editPlace(place)}
+              />
 
+              <IconButton
+                icon="delete-outline"
+                size={22}
+                onPress={() => deletePlace(place.id)}
+              />
+            </View>
           </View>
 
           <Chip
             compact
             icon="map-marker"
-            style={styles.chip}
-          >
+            style={styles.chip}>
             {place.category}
           </Chip>
 
           <Text
             variant="bodyMedium"
             numberOfLines={2}
-            style={styles.description}
-          >
+            style={styles.description}>
             {place.description}
           </Text>
 
@@ -96,23 +100,6 @@ const AppCard = ({ place, deletePlace }: Props) => {
       </View>
     </Card>
   );
-
-  /* return (
-    <Card style={{ marginBottom: 10 }}>
-      <Card.Content>
-        <Text variant="titleMedium">{place.name}</Text>
-        <Text>{place.description}</Text>
-        <Text>{place.category}</Text>
-        <Text>{place.status}</Text>
-        <Button onPress={() => deletePlace(place.id)
-        }>Eliminar</Button>
-      </Card.Content>
-
-      {place.imageUri && (
-        <Card.Cover source={{ uri: place.imageUri }} />
-      )}
-    </Card>
-  ); */
 }
 
 export default AppCard;
@@ -171,5 +158,9 @@ const styles = StyleSheet.create({
   icon: {
     margin: 0,
     marginRight: 4,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     ScrollView,
     StyleSheet,
@@ -23,7 +23,7 @@ import { RootStackParamList } from '../navigator/navigator';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Place } from '../../domain/entities/Place';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { savePlace } from '../../actions/storage';
+import { savePlace, updatePlace } from '../../actions/storage';
 import Geolocation from 'react-native-geolocation-service';
 
 interface FormValues {
@@ -50,28 +50,29 @@ const categories = [
 
 type Props = NativeStackScreenProps<RootStackParamList, 'New'>;
 
-export default function PlaceForm({ navigation }: Props) {
+export default function PlaceForm({ route, navigation }: Props) {
 
+    const place = useRef(route.params.place).current;
     const [menuVisible, setMenuVisible] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
 
     return (
         <Formik<FormValues>
             initialValues={{
-                id: Date.now().toString(),
-                name: '',
-                description: '',
-                category: '',
-                date: new Date(),
-                latitude: '',
-                longitude: '',
-                visited: false,
-                imageUri: null,
+                id: place?.id || Date.now().toString(),
+                name: place?.name || '',
+                description: place?.description || '',
+                category: place?.category || '',
+                date: place?.registerDate ? new Date(place.registerDate) : new Date(),
+                latitude: place?.latitude ? place.latitude.toString() : '',
+                longitude: place?.longitude ? place.longitude.toString() : '',
+                visited: place?.status === 'Visitado' || false,
+                imageUri: place?.imageUri || null,
             }}
             onSubmit={async (values) => {
                 console.log(values);
-                const place: Place = {
-                    id: Date.now().toString(),
+                const newPlace: Place = {
+                    id: place?.id ?? Date.now().toString(),
                     name: values.name,
                     description: values.description,
                     category: values.category,
@@ -82,7 +83,12 @@ export default function PlaceForm({ navigation }: Props) {
                     imageUri: values.imageUri,
                 };
 
-                await savePlace(place);
+                if (!place) {
+                    await savePlace(newPlace);
+                } else {
+                    await updatePlace(newPlace)
+                }
+
                 navigation.goBack();
             }}
         >
@@ -114,8 +120,6 @@ export default function PlaceForm({ navigation }: Props) {
                                 console.log(image.fileSize);
 
                                 setFieldValue('imageUri', image.uri || null);
-
-                                //setImage(image);
                             }
                         },
                     );
