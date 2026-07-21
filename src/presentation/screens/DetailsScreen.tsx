@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, ScrollView, Image, FlatList, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigator/navigator';
-import { ActivityIndicator, Card, Chip, Divider, List, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, Card, Chip, Divider, List, Text } from 'react-native-paper';
 import { Place } from '../../domain/entities/Place';
 import { getPlace } from '../../actions/storage';
 import { findNearbyPlaces } from '../../actions/get-nearby-place';
@@ -69,6 +69,7 @@ export default function DetailsScreen({ route, navigation }: Props) {
 
           <List.Item
             title="Latitud"
+            description={place?.latitude.toFixed(3).toString()}
             left={(props) => (
               <List.Icon {...props} icon="crosshairs-gps"
                 style={{ margin: 0, marginLeft: 0, marginRight: 0 }} />
@@ -77,12 +78,28 @@ export default function DetailsScreen({ route, navigation }: Props) {
 
           <List.Item
             title="Longitud"
-            description={place?.longitude.toString()}
+            description={place?.longitude.toFixed(3).toString()}
             left={(props) => (
               <List.Icon {...props} icon="earth"
                 style={{ margin: 0, marginLeft: 0, marginRight: 0 }} />
             )}
           />
+
+          <Button
+            mode="contained-tonal"
+            icon="map"
+            style={styles.mapButton}
+            onPress={() => {
+              //navigation.navigate('Map');
+              navigation.navigate('Map', {
+                latitude: place?.latitude ?? 0,
+                longitude: place?.longitude ?? 0,
+                title: place!.name,
+              });
+            }}
+          >
+            Ver ubicación en el mapa
+          </Button>
 
           <Divider style={styles.divider} />
 
@@ -141,5 +158,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  mapButton: {
+    marginTop: 12,
+    marginBottom: 8,
+    alignSelf: 'stretch',
   },
 });

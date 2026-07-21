@@ -5,7 +5,12 @@ export type RootStackParamList = {
   Details: {
     id: string;
   };
-  New: {
+  Site: {
     place: Place | undefined;
+  };
+  Map: {
+    latitude: number;
+    longitude: number;
+    title?: string;
   };
 };

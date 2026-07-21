@@ -12,13 +12,11 @@ interface Props {
 
 const AppCard = ({ place, deletePlace, editPlace }: Props) => {
 
-
   return (
 
     <Card
       style={styles.card}
-      mode="elevated"
-    >
+      mode="elevated">
       <View style={styles.container}>
 
         <Image
@@ -60,7 +58,7 @@ const AppCard = ({ place, deletePlace, editPlace }: Props) => {
 
           <Text
             variant="bodyMedium"
-            numberOfLines={2}
+            numberOfLines={3}
             style={styles.description}>
             {place.description}
           </Text>
@@ -74,7 +72,7 @@ const AppCard = ({ place, deletePlace, editPlace }: Props) => {
                 style={styles.icon}
               />
               <Text variant="bodySmall">
-                {place.latitude}
+                {place.latitude.toFixed(3)}
               </Text>
             </View>
 
@@ -85,7 +83,7 @@ const AppCard = ({ place, deletePlace, editPlace }: Props) => {
                 style={styles.icon}
               />
               <Text variant="bodySmall">
-                {place.longitude}
+                {place.longitude.toFixed(3)}
               </Text>
             </View>
 
@@ -147,7 +145,7 @@ const styles = StyleSheet.create({
   },
 
   coordinates: {
-    marginTop: 'auto',
+    marginBottom: 10,
   },
 
   coordinate: {

@@ -44,14 +44,14 @@ export default function HomeScreen({ navigation }: Props) {
                         <Pressable onPress={() => navigation.navigate('Details', { id: item.id })}>
                             <AppCard place={item}
                                 deletePlace={() => { setItem(item); setVisible(true); }}
-                                editPlace={(place) => navigation.navigate('New', { place })} />
+                                editPlace={(place) => navigation.navigate('Site', { place })} />
                         </Pressable>
                     )}
                 />
 
                 <FAB icon="plus" style={styles.fab}
                     onPress={() =>
-                        navigation.navigate('New', { place: undefined })
+                        navigation.navigate('Site', { place: undefined })
                     } />
             </View>
 

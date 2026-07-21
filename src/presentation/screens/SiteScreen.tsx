@@ -24,7 +24,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Place } from '../../domain/entities/Place';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { savePlace, updatePlace } from '../../actions/storage';
-import Geolocation from 'react-native-geolocation-service';
+import Geolocation from '@react-native-community/geolocation';
 
 interface FormValues {
     id: string;
@@ -48,7 +48,7 @@ const categories = [
     'Otro',
 ];
 
-type Props = NativeStackScreenProps<RootStackParamList, 'New'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Site'>;
 
 export default function PlaceForm({ route, navigation }: Props) {
 
@@ -269,7 +269,7 @@ export default function PlaceForm({ route, navigation }: Props) {
                                 mode="contained"
                                 size={30}
                                 onPress={async () => {
-                                    console.log('Obtener ubicación');
+                                    console.log('Obtener ubicación ');
 
                                     if (Platform.OS === 'android') {
                                         const granted = await PermissionsAndroid.request(
