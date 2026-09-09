@@ -22,7 +22,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { RootStackParamList } from '../navigator/navigator';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Place } from '../../domain/entities/Place';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { savePlace, updatePlace } from '../../actions/storage';
 import Geolocation from '@react-native-community/geolocation';
 
@@ -104,6 +104,31 @@ export default function PlaceForm({ route, navigation }: Props) {
                         {
                             mediaType: 'photo',
                             selectionLimit: 1, // Solo una imagen
+                            quality: 1,
+                        },
+                        response => {
+                            if (response.didCancel) {
+                                console.log('Usuario canceló');
+                            } else if (response.errorCode) {
+                                console.log(response.errorMessage);
+                            } else if (response.assets && response.assets.length > 0) {
+                                const image = response.assets[0];
+
+                                console.log(image.uri);
+                                console.log(image.fileName);
+                                console.log(image.type);
+                                console.log(image.fileSize);
+
+                                setFieldValue('imageUri', image.uri || null);
+                            }
+                        },
+                    );
+                }
+
+                const takePhoto = async () => {
+                    launchCamera(
+                        {
+                            mediaType: 'photo',
                             quality: 1,
                         },
                         response => {
@@ -253,6 +278,16 @@ export default function PlaceForm({ route, navigation }: Props) {
                         </View>
 
                         <View style={styles.actions}>
+
+                            <IconButton
+                                icon="camera"
+                                mode="contained"
+                                size={30}
+                                onPress={() => {
+                                    console.log('Tomar foto');
+                                    takePhoto();
+                                }}
+                            />
 
                             <IconButton
                                 icon="image"
